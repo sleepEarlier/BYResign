@@ -1,0 +1,359 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		DC07D42D1E1BB50B00A50A39 /* readme.md in Sources */ = {isa = PBXBuildFile; fileRef = DC07D42C1E1BB50B00A50A39 /* readme.md */; };
+		DC62A3891E14E4D700AC6609 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = DC62A3881E14E4D700AC6609 /* AppDelegate.m */; };
+		DC62A38C1E14E4D700AC6609 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DC62A38B1E14E4D700AC6609 /* main.m */; };
+		DC62A38F1E14E4D700AC6609 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DC62A38E1E14E4D700AC6609 /* ViewController.m */; };
+		DC62A3911E14E4D700AC6609 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC62A3901E14E4D700AC6609 /* Assets.xcassets */; };
+		DC62A3941E14E4D700AC6609 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC62A3921E14E4D700AC6609 /* Main.storyboard */; };
+		DC62A39D1E14E87800AC6609 /* BYTextFieldDrag.m in Sources */ = {isa = PBXBuildFile; fileRef = DC62A39C1E14E87800AC6609 /* BYTextFieldDrag.m */; };
+		DC62A3A31E14E92000AC6609 /* BYHelpViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DC62A3A21E14E92000AC6609 /* BYHelpViewController.m */; };
+		DC62A3A51E14FE2C00AC6609 /* icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = DC62A3A41E14FE2C00AC6609 /* icon.icns */; };
+		DC62A3AB1E15052100AC6609 /* TaskManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DC62A3AA1E15052100AC6609 /* TaskManager.m */; };
+		DCB031941E1F445F00799DCB /* resign.pyc in Resources */ = {isa = PBXBuildFile; fileRef = DCB031931E1F445F00799DCB /* resign.pyc */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		DC07D42C1E1BB50B00A50A39 /* readme.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = readme.md; path = ../readme.md; sourceTree = "<group>"; };
+		DC62A3841E14E4D700AC6609 /* BYResign.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BYResign.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC62A3871E14E4D700AC6609 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		DC62A3881E14E4D700AC6609 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		DC62A38B1E14E4D700AC6609 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		DC62A38D1E14E4D700AC6609 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		DC62A38E1E14E4D700AC6609 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		DC62A3901E14E4D700AC6609 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DC62A3931E14E4D700AC6609 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		DC62A3951E14E4D700AC6609 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DC62A39B1E14E87800AC6609 /* BYTextFieldDrag.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BYTextFieldDrag.h; sourceTree = "<group>"; };
+		DC62A39C1E14E87800AC6609 /* BYTextFieldDrag.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BYTextFieldDrag.m; sourceTree = "<group>"; };
+		DC62A3A11E14E92000AC6609 /* BYHelpViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BYHelpViewController.h; sourceTree = "<group>"; };
+		DC62A3A21E14E92000AC6609 /* BYHelpViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BYHelpViewController.m; sourceTree = "<group>"; };
+		DC62A3A41E14FE2C00AC6609 /* icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = icon.icns; sourceTree = "<group>"; };
+		DC62A3A91E15052100AC6609 /* TaskManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TaskManager.h; sourceTree = "<group>"; };
+		DC62A3AA1E15052100AC6609 /* TaskManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TaskManager.m; sourceTree = "<group>"; };
+		DC9487411E1E4A2400495725 /* PrefixHeader.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
+		DCB031931E1F445F00799DCB /* resign.pyc */ = {isa = PBXFileReference; lastKnownFileType = file; path = resign.pyc; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DC62A3811E14E4D700AC6609 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DC62A37B1E14E4D700AC6609 = {
+			isa = PBXGroup;
+			children = (
+				DC62A3861E14E4D700AC6609 /* BYResign */,
+				DC62A3851E14E4D700AC6609 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DC62A3851E14E4D700AC6609 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DC62A3841E14E4D700AC6609 /* BYResign.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DC62A3861E14E4D700AC6609 /* BYResign */ = {
+			isa = PBXGroup;
+			children = (
+				DC62A3871E14E4D700AC6609 /* AppDelegate.h */,
+				DC62A3881E14E4D700AC6609 /* AppDelegate.m */,
+				DC62A38D1E14E4D700AC6609 /* ViewController.h */,
+				DC62A38E1E14E4D700AC6609 /* ViewController.m */,
+				DC62A3A91E15052100AC6609 /* TaskManager.h */,
+				DC62A3AA1E15052100AC6609 /* TaskManager.m */,
+				DC62A39B1E14E87800AC6609 /* BYTextFieldDrag.h */,
+				DC62A39C1E14E87800AC6609 /* BYTextFieldDrag.m */,
+				DC62A3A11E14E92000AC6609 /* BYHelpViewController.h */,
+				DC62A3A21E14E92000AC6609 /* BYHelpViewController.m */,
+				DC9487411E1E4A2400495725 /* PrefixHeader.pch */,
+				DC62A3901E14E4D700AC6609 /* Assets.xcassets */,
+				DC62A3921E14E4D700AC6609 /* Main.storyboard */,
+				DC62A3951E14E4D700AC6609 /* Info.plist */,
+				DC62A3A41E14FE2C00AC6609 /* icon.icns */,
+				DCB031931E1F445F00799DCB /* resign.pyc */,
+				DC07D42C1E1BB50B00A50A39 /* readme.md */,
+				DC62A38A1E14E4D700AC6609 /* Supporting Files */,
+			);
+			path = BYResign;
+			sourceTree = "<group>";
+		};
+		DC62A38A1E14E4D700AC6609 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				DC62A38B1E14E4D700AC6609 /* main.m */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		DC62A3831E14E4D700AC6609 /* BYResign */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC62A3981E14E4D700AC6609 /* Build configuration list for PBXNativeTarget "BYResign" */;
+			buildPhases = (
+				DC62A3801E14E4D700AC6609 /* Sources */,
+				DC62A3811E14E4D700AC6609 /* Frameworks */,
+				DC62A3821E14E4D700AC6609 /* Resources */,
+				DCD3FFEF1E1F9AD80017E802 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BYResign;
+			productName = BYResign;
+			productReference = DC62A3841E14E4D700AC6609 /* BYResign.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DC62A37C1E14E4D700AC6609 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0810;
+				ORGANIZATIONNAME = kimiLin;
+				TargetAttributes = {
+					DC62A3831E14E4D700AC6609 = {
+						CreatedOnToolsVersion = 8.1;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = DC62A37F1E14E4D700AC6609 /* Build configuration list for PBXProject "BYResign" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = DC62A37B1E14E4D700AC6609;
+			productRefGroup = DC62A3851E14E4D700AC6609 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DC62A3831E14E4D700AC6609 /* BYResign */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DC62A3821E14E4D700AC6609 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC62A3911E14E4D700AC6609 /* Assets.xcassets in Resources */,
+				DC62A3941E14E4D700AC6609 /* Main.storyboard in Resources */,
+				DC62A3A51E14FE2C00AC6609 /* icon.icns in Resources */,
+				DCB031941E1F445F00799DCB /* resign.pyc in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		DCD3FFEF1E1F9AD80017E802 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\nfilePath=${SRCROOT}/${TARGET_NAME}/resign.py\nif [ -f $filePath ]\nthen\n#python -m py_compile file.py\n    p=$(whereis python)\n    $($p -m py_compile $filePath)\nelse\n    echo Not Exits\nfi";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		DC62A3801E14E4D700AC6609 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC62A38F1E14E4D700AC6609 /* ViewController.m in Sources */,
+				DC62A3AB1E15052100AC6609 /* TaskManager.m in Sources */,
+				DC62A38C1E14E4D700AC6609 /* main.m in Sources */,
+				DC62A3A31E14E92000AC6609 /* BYHelpViewController.m in Sources */,
+				DC07D42D1E1BB50B00A50A39 /* readme.md in Sources */,
+				DC62A39D1E14E87800AC6609 /* BYTextFieldDrag.m in Sources */,
+				DC62A3891E14E4D700AC6609 /* AppDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		DC62A3921E14E4D700AC6609 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DC62A3931E14E4D700AC6609 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		DC62A3961E14E4D700AC6609 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		DC62A3971E14E4D700AC6609 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		DC62A3991E14E4D700AC6609 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SRCROOT)/BYResign/PrefixHeader.pch";
+				INFOPLIST_FILE = BYResign/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				PRODUCT_BUNDLE_IDENTIFIER = Boyaa.BYResign;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		DC62A39A1E14E4D700AC6609 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SRCROOT)/BYResign/PrefixHeader.pch";
+				INFOPLIST_FILE = BYResign/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				PRODUCT_BUNDLE_IDENTIFIER = Boyaa.BYResign;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DC62A37F1E14E4D700AC6609 /* Build configuration list for PBXProject "BYResign" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC62A3961E14E4D700AC6609 /* Debug */,
+				DC62A3971E14E4D700AC6609 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC62A3981E14E4D700AC6609 /* Build configuration list for PBXNativeTarget "BYResign" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC62A3991E14E4D700AC6609 /* Debug */,
+				DC62A39A1E14E4D700AC6609 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DC62A37C1E14E4D700AC6609 /* Project object */;
+}
