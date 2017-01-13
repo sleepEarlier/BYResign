@@ -292,9 +292,9 @@ static NSString *bundleIDKey = @"BUNDLE_ID_KEY";
     if (self.ipaField.stringValue.length < 1) {
         message = @"请设置重签名IPA包路径";
     }
-    else if (self.resourceField.stringValue.length < 1) {
+//    else if (self.resourceField.stringValue.length < 1) {
 //        message = @"请设置Lua脚本路径";
-    }
+//    }
     else if (self.bundleIdCheckBtn.state == NSOnState && self.bundleIdField.stringValue.length < 1) {
         message = @"请设置新的BundleId";
     }

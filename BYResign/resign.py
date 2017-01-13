@@ -21,6 +21,8 @@ import plistlib
 # INFOPLIST_NOTEXISTS = 3
 # EMBEDED_PP_NOTEXISTS = 4
 
+Tool_Version = '1.1'
+
 def __handle_error_lines(process, cmd, inlistformate = False):
 	'''
 	@brief 处理命令行输出
@@ -83,20 +85,28 @@ class Resigner(object):
 		self.cerSHA = cerSHA
 		self.cerName = cerName
 		self.workDir = workDir
+		self.symbols = None
 		
 	def resign(self):
-		self.unzipIPA()
-		self.replacePPFIleIfNeed()
-		self.generateEntitlements()
-		self.modifyBundleIdIfNeed()
+		try:
+			self.unzipIPA()
+			self.replacePPFIleIfNeed()
+			self.modifyBundleIdIfNeed()
+			self.generateEntitlements()
 
-		self.checkSignCondition()
+			self.checkSignCondition()
 
-		self.replaceResourceIfNeed()
-		self.forceSign()
-		self.verifySignature()
-		self.packIPA()
-		self.cleanUp()
+			self.replaceResourceIfNeed()
+			self.forceSign()
+			self.verifySignature()
+			self.packIPA()
+		except Exception as e:
+			self.cleanUp()
+			raise e
+		else:
+			self.cleanUp()
+		
+		
 		
 
 	def checkSignCondition(self):
@@ -158,7 +168,7 @@ class Resigner(object):
 		print('unzip file...')
 		cmd = 'cd %s;unzip -q %s' % ( os.path.dirname(targetPath), targetPath )
 		feedback = execute_cmd(cmd)
-		
+
 		if os.path.exists(self.payload) and os.path.isdir(self.payload):
 			
 			# 可能存在Symbols文件夹，重签名后需要与Payload一起压缩
@@ -220,6 +230,14 @@ class Resigner(object):
 			except Exception, e:
 				raise Exception('读取plist文件失败：%s' % e)
 			entitlements = tempPlist['Entitlements']
+			if self.infoBundleId == 'com.boyaa.dalianAPPID':
+				# prefix: 7QMD9LVCM8
+				entitlements['keychain-access-groups'] = ['7QMD9LVCM8.7QMD9LVCM8.com.boyaa.dalianAPPID']
+			elif self.infoBundleId == 'com.boyaa.dalian':
+				# prefix: 2E38PQV246
+				entitlements['keychain-access-groups'] = ['2E38PQV246.7QMD9LVCM8.com.boyaa.dalianAPPID']
+			else:
+				entitlements['keychain-access-groups'] = [entitlements['application-identifier']]
 			try:
 				plistlib.writePlist(entitlements, self.entitlements)
 			except Exception, e:
@@ -262,6 +280,14 @@ class Resigner(object):
 			feedback = feedback.strip()
 			self.infoBundleId = feedback
 
+		# add resign version
+		cmd = "/usr/libexec/PlistBuddy -c \"Add :Resign_Version string %s\" %s" % (Tool_Version, self.infoPlistPath)
+		feedback = execute_cmd(cmd)
+		if len(feedback) < 1:
+			print('add Resign_Version:%s' % Tool_Version)
+		else:
+			print('add Resign_Version feedback:%s' % feedback)
+
 		print('Info BundleId:\"%s\"' % self.infoBundleId)
 
 	def replaceFile(self, directory, targetFilePathes):
@@ -294,7 +320,13 @@ class Resigner(object):
 		print('\nForce signning...')
 
 		signPath = 'Payload/' + os.path.basename(self.appPath)
+		pl = plistlib.readPlist(self.entitlements)
+		print('\n*** Entitlements ***')
+		for item in pl.items():
+			print('%s = %s' % item)
 		cmd = 'cd %s;codesign -f -s \"%s\" --no-strict --entitlements %s %s' % (self.workDir, self.cerSHA, self.entitlements, signPath)
+		print('\n')
+		print cmd
 		feedback = execute_cmd(cmd)
 		
 		check = '%s: replacing existing signature\n' % signPath
@@ -344,12 +376,12 @@ class Resigner(object):
 
 if __name__ == '__main__':
 	def testResign():
-		ipaPath = '/Users/kimilin/Downloads/zigong_Release_Distribution.ipa'
+		ipaPath = '/Users/kimilin/Desktop/yibin_AD_tool.ipa'
 		resourcePathes = ''
-		embedPath = ''
+		embedPath = '/Users/kimilin/Documents/iOS_Cer_N_PP/PPFiles/com.boyaa.yibinAPPID_ADHOC.mobileprovision'
 		newBundleId = ''
-		cerSHA = '141E0CB07AA54766664EBEB32F48E99A957362EE'
-		cerName = 'iPhone Distribution: Guangjiu Zhao (7QMD9LVCM8)'
+		cerSHA = '141E0CB07AA54766664EBEB32F48E99A957362EE' # 141E0CB07AA54766664EBEB32F48E99A957362EE
+		cerName = 'iPhone Distribution: Guangjiu Zhao (7QMD9LVCM8)' # iPhone Distribution: Guangjiu Zhao (7QMD9LVCM8)
 		workDir = '/var/folders/4f/slhnzjnn7_jb1sj6gfmb3jtr0000gp/T/BYResign'
 		if not os.path.exists(workDir):
 			os.mkdir(workDir)
@@ -358,6 +390,7 @@ if __name__ == '__main__':
 
 	reload(sys)
 	sys.setdefaultencoding('utf8')
+	# testResign()
 	try:
 		args = sys.argv
 		ipaPath = args[1]
@@ -371,11 +404,7 @@ if __name__ == '__main__':
 		raise Exception('缺少必要参数，请检查,argv = %s' % args)
 	else:
 		rsg = Resigner(ipaPath, resourcePathes, embedPath, newBundleId, cerSHA, cerName, workDir)
-		try:
-			rsg.resign()
-		except Exception, e:
-			rsg.cleanUp()
-			raise e
+		rsg.resign()
         
 
 
