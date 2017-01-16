@@ -50,9 +50,9 @@ static NSString *bundleIDKey = @"BUNDLE_ID_KEY";
     [super viewDidLoad];
     [self dataInit];
     [self toolsCheck];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self getCerts];
-    });
+    
+    [self getCerts];
+    
     [self dataHandlerForLoad:YES];
 }
 
@@ -113,27 +113,27 @@ static NSString *bundleIDKey = @"BUNDLE_ID_KEY";
             }
         }];
         
-        dispatch_async(dispatch_get_main_queue(), ^{
-            // 可能出现同名的新旧证书，两者SHA1不同但名称完全一致，因此无法进行过滤，保留重复项
-            if (self.cerNames.count != self.cerSHA1s.count) {
-                self.status.stringValue = @"正则匹配错误，证书名与SHA1数量不匹配";
-                [self showAlertWithMsg:@"正则匹配错误，证书名与SHA1数量不匹配"];
-            } else {
-                if (self.cerNames.count == 0) {
-                    self.status.stringValue = @"此Mac上还没有可用的证书";
-                    [self showAlertWithMsg:@"此Mac上还没有可用的证书"];
-                    return ;
-                }
-                
-                self.status.stringValue = @"准备签名";
-                [self.box addItemsWithObjectValues:self.cerNames];
+        
+        // 可能出现同名的新旧证书，两者SHA1不同但名称完全一致，因此无法进行过滤，保留重复项
+        if (self.cerNames.count != self.cerSHA1s.count) {
+            self.status.stringValue = @"正则匹配错误，证书名与SHA1数量不匹配";
+            [self showAlertWithMsg:@"正则匹配错误，证书名与SHA1数量不匹配"];
+        } else {
+            if (self.cerNames.count == 0) {
+                self.status.stringValue = @"此Mac上还没有可用的证书";
+                [self showAlertWithMsg:@"此Mac上还没有可用的证书"];
+                return ;
             }
-        });
+            
+            self.status.stringValue = @"准备签名";
+            [self.box addItemsWithObjectValues:self.cerNames];
+        }
+        
         
     } onFail:^(NSString *resultString) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self showAlertWithMsg:resultString];
-        });
+        
+        [self showAlertWithMsg:resultString];
+        
         
     }];
 }
@@ -222,10 +222,8 @@ static NSString *bundleIDKey = @"BUNDLE_ID_KEY";
     self.status.stringValue = @"签名中...";
     
     [TaskManager launchTaskWithPath:@"/usr/bin/python" args:arguments onSuccess:^(NSString *resultString) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [weakSelf controlsEnable:YES];
-            weakSelf.status.stringValue = @"重签名成功!";
-        });
+        [weakSelf controlsEnable:YES];
+        weakSelf.status.stringValue = @"重签名成功!";
         
     } onFail:^(NSString *resultString) {
         
@@ -309,6 +307,9 @@ static NSString *bundleIDKey = @"BUNDLE_ID_KEY";
         }
         
         NSArray<NSString *> *resourcePathes = [self.resourceField.stringValue componentsSeparatedByString:self.resourceField.seperator];
+        resourcePathes = [resourcePathes filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id  _Nullable evaluatedObject, NSDictionary<NSString *,id> * _Nullable bindings) {
+            return [evaluatedObject length] > 0;
+        }]];
         
         // 路径都存在
         if (![self.ipaField.stringValue hasSuffix:@".ipa"]) {
@@ -352,15 +353,16 @@ static NSString *bundleIDKey = @"BUNDLE_ID_KEY";
         _resourceField.stringValue = [df objectForKey:resourceKey];
         _ppField.stringValue = [df objectForKey:PPKey];
         NSNumber *enable = [df objectForKey:modifyEnableKey];
-        if (enable.boolValue) {
-            _bundleIdField.stringValue = [df objectForKey:bundleIDKey];
-        }
+        _bundleIdCheckBtn.state = enable.integerValue;
+        
+        _bundleIdField.stringValue = [df objectForKey:bundleIDKey];
+        
     } else {
         [df setObject:_ipaField.stringValue forKey:IPAKey];
         [df setObject:_resourceField.stringValue forKey:resourceKey];
         [df setObject:_ppField.stringValue forKey:PPKey];
-        [df setObject:@(_bundleIdCheckBtn.enabled) forKey:modifyEnableKey];
-        if (_bundleIdCheckBtn.enabled) {
+        [df setObject:@(_bundleIdCheckBtn.state) forKey:modifyEnableKey];
+        if (_bundleIdCheckBtn.state == NSOnState) {
             [df setObject:_bundleIdField.stringValue forKey:bundleIDKey];
         } else {
             [df setObject:@"" forKey:bundleIDKey];

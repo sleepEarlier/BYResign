@@ -21,6 +21,7 @@
 }
 
 + (NSTask *)launchTaskWithPath:(NSString *)path args:(NSArray *)args wait:(BOOL)wait onSuccess:(TaskResult)success onFail:(TaskResult)fail {
+    
     NSTask *task = [[NSTask alloc]init];
     task.launchPath = path;
     task.arguments = args;
@@ -28,27 +29,35 @@
     
     task.standardOutput = outputPipe;
     task.standardError = outputPipe;
-    [task launch];
-    if (wait) {
-        [task waitUntilExit];
-        int status = [task terminationStatus];
-        NSFileHandle *fileHandler = [outputPipe fileHandleForReading];
-        if (status == 0) {
-            NSLog(@"Task succeeded.");
-            if (success) {
-                NSData *fileData = [fileHandler readDataToEndOfFile];
-                NSString * resultMsg = [[NSString alloc] initWithData:fileData encoding:NSUTF8StringEncoding];
-                success(resultMsg);
-            }
-        } else {
-            NSLog(@"Task failed.");
-            if (fail) {
-                NSData *fileData = [fileHandler readDataToEndOfFile];
-                NSString * resultMsg = [[NSString alloc] initWithData:fileData encoding:NSUTF8StringEncoding];
-                fail(resultMsg);
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [task launch];
+        if (wait) {
+            [task waitUntilExit];
+            int status = [task terminationStatus];
+            NSFileHandle *fileHandler = [outputPipe fileHandleForReading];
+            if (status == 0) {
+                NSLog(@"Task succeeded.");
+                if (success) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        NSData *fileData = [fileHandler readDataToEndOfFile];
+                        NSString * resultMsg = [[NSString alloc] initWithData:fileData encoding:NSUTF8StringEncoding];
+                        success(resultMsg);
+                    });
+                }
+            } else {
+                NSLog(@"Task failed.");
+                if (fail) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        NSData *fileData = [fileHandler readDataToEndOfFile];
+                        NSString * resultMsg = [[NSString alloc] initWithData:fileData encoding:NSUTF8StringEncoding];
+                        fail(resultMsg);
+                    });
+                }
             }
         }
-    }
+    });
+    
     return task;
 }
 

@@ -28,7 +28,6 @@ logger.addHandler(streamHandler)
 
 
 def addFileHandler(filePath):
-	print('log file Path:%s' % filePath)
 	fileHandler = logging.FileHandler(filePath,encoding = 'utf-8')
 	logger.addHandler(fileHandler)
 
@@ -162,7 +161,7 @@ class Resigner(object):
 				if file.endswith('.app'):
 					self.appPath = os.path.join(self.payload,file)
 
-			addFileHandler(os.path.join(self.appPath, 'resign.log')) #ChangeLogUnzip
+			addFileHandler(os.path.join(self.appPath, 'resign_%s.log' % Tool_Version)) #ChangeLogUnzip
 			self.infoPlistPath = os.path.join(self.appPath,'Info.plist')
 			self.embedPath = os.path.join(self.appPath,'embedded.mobileprovision')
 			# delete zip file
