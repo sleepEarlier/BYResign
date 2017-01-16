@@ -16,7 +16,7 @@ import tempfile
 import plistlib
 import logging
 
-Tool_Version = '1.1'
+Tool_Version = '1.2'
 
 # Log Config
 formatter = logging.Formatter('[line:%(lineno)d]: %(message)s')
