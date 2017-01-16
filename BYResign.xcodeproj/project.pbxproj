@@ -182,7 +182,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\nfilePath=${SRCROOT}/${TARGET_NAME}/resign.py\nif [ -f $filePath ]\nthen\n#python -m py_compile file.py\n    p=$(whereis python)\n    $($p -m py_compile $filePath)\nelse\n    echo Not Exits\nfi";
+			shellScript = "#!/bin/bash\nfilePath=${SRCROOT}/${TARGET_NAME}/resign.py\nif [ -f $filePath ]\nthen\n#python -m py_compile file.py\n    p=$(whereis python)\n    $($p -m py_compile $filePath)\nelse\n    echo Not Exits\nfi\necho \"*** Script Finish *** \"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
