@@ -14,14 +14,23 @@ import os
 import shutil
 import tempfile
 import plistlib
-
-
-# LACK_ARGHMENT = 1
-# PAYLOAD_NOEXISTS = 2
-# INFOPLIST_NOTEXISTS = 3
-# EMBEDED_PP_NOTEXISTS = 4
+import logging
 
 Tool_Version = '1.1'
+
+# Log Config
+formatter = logging.Formatter('[line:%(lineno)d]: %(message)s')
+logger = logging.getLogger('BYResign')
+logger.setLevel(logging.DEBUG)
+streamHandler = logging.StreamHandler(sys.stdout)
+
+logger.addHandler(streamHandler)
+
+
+def addFileHandler(filePath):
+	print('log file Path:%s' % filePath)
+	fileHandler = logging.FileHandler(filePath,encoding = 'utf-8')
+	logger.addHandler(fileHandler)
 
 def __handle_error_lines(process, cmd, inlistformate = False):
 	'''
@@ -88,6 +97,16 @@ class Resigner(object):
 		self.symbols = None
 		
 	def resign(self):
+		# self.unzipIPA()
+		# self.replacePPFIleIfNeed()
+		# self.modifyBundleIdIfNeed()
+		# self.generateEntitlements()
+
+		# self.checkSignCondition()
+
+		# self.replaceResourceIfNeed()
+		# self.forceSign()
+		# self.verifySignature()
 		try:
 			self.unzipIPA()
 			self.replacePPFIleIfNeed()
@@ -107,46 +126,10 @@ class Resigner(object):
 			self.cleanUp()
 		
 		
-		
-
-	def checkSignCondition(self):
-		# 检查Info.plist的bundleId与描述文件的BundleId是否一致
-		# 检查描述文件和证书是否匹配
-		print('\nChecking matches...')
-		cmd = 'security cms -D -i %s' % self.embedPath
-		embeddedInfo = execute_cmd(cmd)
-
-		toDelete = "security: SecPolicySetValue: One or more parameters passed to a function were not valid.\n"
-		if toDelete in embeddedInfo:
-			embeddedInfo = embeddedInfo.replace(toDelete,'')
-
-		pl = plistlib.readPlistFromString(embeddedInfo)
-		embeddedTeamId = pl['Entitlements']['com.apple.developer.team-identifier']
-		embeddedBundleId = pl['Entitlements']['application-identifier']
-		embeddedBundleId = embeddedBundleId.replace(embeddedTeamId+'.','')
-
-		# verify Profile match Certificate or not
-		if self.cerName.find(')') > 0:
-			import re
-			# 'iPhone Distribution: lian wen (5QVFGL3BHF)'
-			match = re.search(r'(\([\w\d]+\))', self.cerName)
-			if match:
-				cerTeamId = match.group()[1:-1]
-				if cerTeamId == embeddedTeamId:
-					print('embedded.mobileprovision match certificate')
-				else:
-					raise Exception('描述文件与证书不匹配, 描述文件Team-Id:%s, 证书Team-Id:%s，请检查证书是否选择正确' % (embeddedTeamId, cerTeamId))
-			else:
-				raise Exception("无法从证书\"%s\"中匹配到TeamId" % self.cerName)
-
-		# verify Profile BundleId match Info.plist or not
-
-		if embeddedBundleId != self.infoBundleId:
-			raise Exception('描述文件BundleId:\"%s\" 与Info.plist的bundleId:\"%s\"不匹配' %(embeddedBundleId, self.infoBundleId))
-		print('Profile matches Cer, bundleId matches')
-		
 	def unzipIPA(self):
 		targetPath = os.path.join(self.workDir,'IPA.zip')
+		if not os.path.exists(self.ipaPath):
+			raise Exception('IPA %s not exists' % os.path.basename(self.ipaPath))
 		cmd = r'cp %s %s' % (self.ipaPath, targetPath)
 		# copy as zip
 		print('coping IPA')
@@ -179,6 +162,7 @@ class Resigner(object):
 				if file.endswith('.app'):
 					self.appPath = os.path.join(self.payload,file)
 
+			addFileHandler(os.path.join(self.appPath, 'resign.log')) #ChangeLogUnzip
 			self.infoPlistPath = os.path.join(self.appPath,'Info.plist')
 			self.embedPath = os.path.join(self.appPath,'embedded.mobileprovision')
 			# delete zip file
@@ -192,15 +176,15 @@ class Resigner(object):
 			if not result:
 				raise Exception('缺少embedded.mobileprovision:%s' % self.embedPath)
 
-			print('unziping file success')
+			logger.info('unziping file success')
 		else:
 			print('unziping file fail')
-			raise Exception('解压失败，无法找到Payload文件夹')
+			raise Exception('解压失败，无法找到Payload文件夹:%s' % self.payload)
 
 	def replacePPFIleIfNeed(self):
-		print('\nReplacing PPFile...')
+		logger.info('\nReplacing PPFile...')
 		if len(self.replacePPFilePath) > 0:
-			print('replacing PP file...')
+			logger.info('replacing PP file...')
 			if os.path.exists(self.replacePPFilePath):
 				cmd = r'cd %s;cp %s %s' % (self.appPath, self.replacePPFilePath, os.path.join(self.appPath,'embedded.mobileprovision'))
 				feedback = execute_cmd(cmd)
@@ -209,16 +193,16 @@ class Resigner(object):
 					print feedback
 					raise Exception('复制描述文件失败:%s' % feedback)
 				else:
-					print('replace PP file success')
+					logger.info('replace PP file success')
 			else:
 				raise Exception('用于替换的描述文件不存在，请检查:%s' % self.replacePPFilePath)
 		else:
-			print('No need to replace PP file')
+			logger.info('No need to replace PP file')
 		
 	def generateEntitlements(self):
-		print('\nGenerating entitlements.plist...')
+		logger.info('\nGenerating entitlements.plist...')
 		if os.path.exists(self.embedPath):
-			print('Generate entitlements...')
+			logger.info('Generate entitlements...')
 			tempPlistPath = os.path.join(self.workDir, 'temp.plist')
 			if os.path.exists(tempPlistPath):
 				os.remove(tempPlistPath)
@@ -244,37 +228,73 @@ class Resigner(object):
 				os.remove(tempPlistPath)
 				raise Exception('写入Plist失败:%s' % e)
 			os.remove(tempPlistPath)
-			print('Generate entitlements success')
+			logger.info('Generate entitlements success')
 		else:
-			print('embedded.mobileprovision not exists')
+			logger.info('embedded.mobileprovision not exists')
 			raise Exception('缺少embedded.mobileprovision:%s' % self.embedPath)
 
+	def checkSignCondition(self):
+		# 检查Info.plist的bundleId与描述文件的BundleId是否一致
+		# 检查描述文件和证书是否匹配
+		logger.info('\nChecking matches...')
+		cmd = 'security cms -D -i %s' % self.embedPath
+		embeddedInfo = execute_cmd(cmd)
+
+		toDelete = "security: SecPolicySetValue: One or more parameters passed to a function were not valid.\n"
+		if toDelete in embeddedInfo:
+			embeddedInfo = embeddedInfo.replace(toDelete,'')
+
+		pl = plistlib.readPlistFromString(embeddedInfo)
+		embeddedTeamId = pl['Entitlements']['com.apple.developer.team-identifier']
+		embeddedBundleId = pl['Entitlements']['application-identifier']
+		embeddedBundleId = embeddedBundleId.replace(embeddedTeamId+'.','')
+
+		# verify Profile match Certificate or not
+		if self.cerName.find(')') > 0:
+			import re
+			# 'iPhone Distribution: lian wen (5QVFGL3BHF)'
+			match = re.search(r'(\([\w\d]+\))', self.cerName)
+			if match:
+				cerTeamId = match.group()[1:-1]
+				if cerTeamId == embeddedTeamId:
+					logger.info('embedded.mobileprovision match certificate')
+				else:
+					raise Exception('描述文件与证书不匹配, 描述文件Team-Id:%s, 证书Team-Id:%s，请检查证书是否选择正确' % (embeddedTeamId, cerTeamId))
+			else:
+				raise Exception("无法从证书\"%s\"中匹配到TeamId" % self.cerName)
+
+		# verify Profile BundleId match Info.plist or not
+
+		if embeddedBundleId != self.infoBundleId:
+			raise Exception('描述文件BundleId:\"%s\" 与Info.plist的bundleId:\"%s\"不匹配' %(embeddedBundleId, self.infoBundleId))
+		logger.info('Profile matches Cer, bundleId matches')
+
 	def modifyBundleIdIfNeed(self):
-		print('\nModifying BundleId...')
+		logger.info('\nModifying BundleId...')
 		if len(self.newBundleId) > 0:
 
 			# CFBundleIdentifier
-			print('modify CFBundleIdentifier...')
+			logger.info('modify CFBundleIdentifier...')
 			cmd = "/usr/libexec/PlistBuddy -c \"Set CFBundleIdentifier %s\" %s" % (self.newBundleId, self.infoPlistPath)
 			feedback = execute_cmd(cmd)
 			if len(feedback) < 1:
-				print('modify CFBundleIdentifier success')
+				logger.info('modify CFBundleIdentifier success')
 				# softwareVersionBundleId
 				cmd = "/usr/libexec/PlistBuddy -c \"Print softwareVersionBundleId\" %s" % self.infoPlistPath
 				feedback = execute_cmd(cmd)
 				if 'Does Not Exist' in feedback:
-					print('No need to modify softwareVersionBundleId')
+					logger.info('No need to modify softwareVersionBundleId')
 				else:
 					cmd = "/usr/libexec/PlistBuddy -c \"Set softwareVersionBundleId %s\" %s" % (self.newBundleId, self.infoPlistPath)
 					feedback = execute_cmd(cmd)
 					if len(feedback) < 1:
-						print('modify CFBundleIdentifier success')
+						logger.info('modify CFBundleIdentifier success')
 					else:
-						print(feedback)
+						logger.info(feedback)
 						raise Exception('修改iTunes资料BundleId失败:%s' % feedback)
 				self.infoBundleId = self.newBundleId
 		else:
-			print('No need to modify BundleIds')
+			logger.info('No need to modify BundleIds')
 			cmd = "/usr/libexec/PlistBuddy -c \"Print CFBundleIdentifier\" %s" % self.infoPlistPath
 			feedback = execute_cmd(cmd)
 			feedback = feedback.strip()
@@ -284,11 +304,11 @@ class Resigner(object):
 		cmd = "/usr/libexec/PlistBuddy -c \"Add :Resign_Version string %s\" %s" % (Tool_Version, self.infoPlistPath)
 		feedback = execute_cmd(cmd)
 		if len(feedback) < 1:
-			print('add Resign_Version:%s' % Tool_Version)
+			logger.info('add Resign_Version:%s' % Tool_Version)
 		else:
-			print('add Resign_Version feedback:%s' % feedback)
+			logger.info('add Resign_Version feedback:%s' % feedback)
 
-		print('Info BundleId:\"%s\"' % self.infoBundleId)
+		logger.info('Info BundleId:\"%s\"' % self.infoBundleId)
 
 	def replaceFile(self, directory, targetFilePathes):
 		for file in os.listdir(directory):
@@ -306,35 +326,37 @@ class Resigner(object):
 						break
 
 	def replaceResourceIfNeed(self):
-		print('\nReplacing resource files...')
+		logger.info('\nReplacing resource files...')
 		try:
 			if len(self.resourcePathes) > 1:
 				filePathes = filter(lambda s: s, self.resourcePathes.split(','))
 				return self.replaceFile(self.appPath, filePathes)
 			else:
-				print('No need to replace resource')
+				logger.info('No need to replace resource')
 		except Exception, e:
 			raise Exception('替换资源文件失败:%s' % e)
 
 	def forceSign(self):
-		print('\nForce signning...')
+		logger.info('\nForce signning...')
 
 		signPath = 'Payload/' + os.path.basename(self.appPath)
 		pl = plistlib.readPlist(self.entitlements)
-		print('\n*** Entitlements ***')
+		logger.info('\n*** Entitlements ***')
 		for item in pl.items():
-			print('%s = %s' % item)
+			logger.info('%s = %s' % item)
+
 		cmd = 'cd %s;codesign -f -s \"%s\" --no-strict --entitlements %s %s' % (self.workDir, self.cerSHA, self.entitlements, signPath)
-		print('\n')
-		print cmd
+		logger.info(cmd)		
 		feedback = execute_cmd(cmd)
-		
+
+		# 执行签名后，不能再更改Payload中的文件内容，因此不能继续往重签名log中写入
+
 		check = '%s: replacing existing signature\n' % signPath
 		if feedback == check:
-			print feedback.strip()
+			print(feedback.strip())
 			print('force sign success')
 		else:
-			print feedback
+			print(feedback)
 			raise Exception('签名失败:%s' % feedback)
 
 	def verifySignature(self):
@@ -359,11 +381,11 @@ class Resigner(object):
 			cmd = 'cd %s;zip -qry %s %s %s' % (self.workDir, targetPath, os.path.basename(self.payload), os.path.basename(self.symbols))
 		else:
 			cmd = 'cd %s;zip -qry %s %s' % (self.workDir, targetPath, os.path.basename(self.payload))
-		print cmd
+		print(cmd)
 		feedback = execute_cmd(cmd)
 		feedback = feedback.strip()
 		if len(feedback) > 0:
-			print feedback
+			print(feedback)
 			raise Exception('打包IPA失败:%s' % feedback)
 		else:
 			print('Pack IPA Success')
@@ -376,9 +398,9 @@ class Resigner(object):
 
 if __name__ == '__main__':
 	def testResign():
-		ipaPath = '/Users/kimilin/Desktop/yibin_AD_tool.ipa'
+		ipaPath = '/Users/kimilin/Desktop/leshan_ad_tool.ipa'
 		resourcePathes = ''
-		embedPath = '/Users/kimilin/Documents/iOS_Cer_N_PP/PPFiles/com.boyaa.yibinAPPID_ADHOC.mobileprovision'
+		embedPath = '/Users/kimilin/Documents/iOS_Cer_N_PP/PPFiles/com.boyaa.leshanAPPID_ADHOC.mobileprovision'
 		newBundleId = ''
 		cerSHA = '141E0CB07AA54766664EBEB32F48E99A957362EE' # 141E0CB07AA54766664EBEB32F48E99A957362EE
 		cerName = 'iPhone Distribution: Guangjiu Zhao (7QMD9LVCM8)' # iPhone Distribution: Guangjiu Zhao (7QMD9LVCM8)
@@ -390,7 +412,9 @@ if __name__ == '__main__':
 
 	reload(sys)
 	sys.setdefaultencoding('utf8')
+	
 	# testResign()
+
 	try:
 		args = sys.argv
 		ipaPath = args[1]
