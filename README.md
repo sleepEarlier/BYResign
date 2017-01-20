@@ -1,7 +1,7 @@
 
 证书与描述文件： 可从DiFangQiPai SVN 中的iOS_Cer_N_PP中获取，证书需要双击导入到本地电脑中。
 
-0. 双击证书，导入到本地电脑中
+不建议使用此工具将开发包重签为上架包用于上架。
 
 工具使用方法：
 1. 填写IPA路径（可以将IPA拖入输入框中 或者 点击浏览进行选择 或者手动输入）
@@ -30,3 +30,7 @@ e.g.:
 聊城、潍坊、淄博 zhendong.p12：iPhone Distribution: Li Yi (NTQMVSS2LG)
 
 目前只支持对IPA进行签名
+
+常见问题：
+1. the codesign_allocate helper tool cannot be found or used
+电脑安装了新版本Xcode，请使用sudo xcode-select /path/to/xcode 设置xcode路径

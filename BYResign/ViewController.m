@@ -15,6 +15,9 @@ static NSString *resourceKey = @"REOURCE_KEY";
 static NSString *PPKey = @"PROVISIONING_PROFILE_KEY";
 static NSString *modifyEnableKey = @"BUNDLE_ID_MODYFY_ENABLE";
 static NSString *bundleIDKey = @"BUNDLE_ID_KEY";
+static NSString *displayNameKey = @"DISPLAY_NAME_KEY";
+static NSString *versionKey = @"VERSION_KEY";
+static NSString *buildKey = @"BUILD_KEY";
 
 @interface ViewController ()<NSComboBoxDataSource,NSComboBoxDelegate>
 {
@@ -29,6 +32,9 @@ static NSString *bundleIDKey = @"BUNDLE_ID_KEY";
 @property (weak) IBOutlet BYTextFieldDrag *resourceField;
 @property (weak) IBOutlet BYTextFieldDrag *ppField;
 @property (weak) IBOutlet NSTextField *bundleIdField;
+@property (weak) IBOutlet NSTextField *disPlayNameField;
+@property (weak) IBOutlet NSTextField *versionField;
+@property (weak) IBOutlet NSTextField *buildField;
 @property (weak) IBOutlet NSButton *ipaBrowse;
 @property (weak) IBOutlet NSButton *resourceBrowse;
 @property (weak) IBOutlet NSButton *ppBrowse;
@@ -65,6 +71,7 @@ static NSString *bundleIDKey = @"BUNDLE_ID_KEY";
 }
 
 - (void)dataInit {
+    
     fm = [NSFileManager defaultManager];
     workFloder = [NSTemporaryDirectory() stringByAppendingPathComponent:@"BYResign"];
     NSLog(@"%@",workFloder);
@@ -75,16 +82,19 @@ static NSString *bundleIDKey = @"BUNDLE_ID_KEY";
     }
     self.cerNames  = @[].mutableCopy;
     self.cerSHA1s = @[].mutableCopy;
-    
+    // 设置初始化值，签名前校验
     NSUserDefaults *df = [NSUserDefaults standardUserDefaults];
-    if (![df objectForKey:IPAKey]) {
+    if (![df objectForKey:buildKey]) {
         [df setObject:@"" forKey:IPAKey];
         [df setObject:@"" forKey:resourceKey];
         [df setObject:@"" forKey:PPKey];
         [df setObject:@(NO) forKey:modifyEnableKey];
         [df setObject:@"" forKey:bundleIDKey];
+        [df setObject:@"" forKey:displayNameKey];
+        [df setObject:@"" forKey:versionKey];
+        [df setObject:@"" forKey:buildKey];
     }
-    self.status.stringValue = @"获取证书中...";
+    
 }
 
 - (void)getCerts {
@@ -127,6 +137,7 @@ static NSString *bundleIDKey = @"BUNDLE_ID_KEY";
             
             self.status.stringValue = @"准备签名";
             [self.box addItemsWithObjectValues:self.cerNames];
+            self.resignBtn.enabled = YES;
         }
         
         
@@ -211,6 +222,9 @@ static NSString *bundleIDKey = @"BUNDLE_ID_KEY";
                            self.resourceField.stringValue, // resource
                            self.ppField.stringValue, // PP file
                            self.bundleIdField.stringValue, // new BundleId
+                           self.disPlayNameField.stringValue, // display name
+                           self.versionField.stringValue, // version
+                           self.buildField.stringValue, // build
                            self.cerSHA1s[self.box.indexOfSelectedItem], // sha1
                            self.box.objectValueOfSelectedItem, // cerName
                            workFloder // tempFloder to use
@@ -335,6 +349,38 @@ static NSString *bundleIDKey = @"BUNDLE_ID_KEY";
             }
         }
         
+        // 验证版本号
+        NSRegularExpression *exp = [NSRegularExpression regularExpressionWithPattern:@"^\\d+(\\.\\d+){0,2}$" options:0 error:nil];
+        
+        if (self.versionField.stringValue.length > 0) {
+             NSString *version = [self versionHandler:self.versionField.stringValue];
+            if (version.length > 0) {
+                NSTextCheckingResult *match = [exp firstMatchInString:version options:0 range:NSMakeRange(0, version.length)];
+                if (match) {
+                    self.versionField.stringValue = [version substringWithRange:match.range];
+                } else {
+                    message = @"版本号格式错误。参考格式：\"1\", \"2.1\", \"3.2.1\"";
+                }
+            } else {
+                message = @"版本号格式错误。参考格式：\"1\", \"2.1\", \"3.2.1\"";
+            }
+        }
+        // 验证build号
+        if (self.buildField.stringValue.length > 0) {
+            NSString *build = [self versionHandler:self.buildField.stringValue];
+            if (build.length > 0) {
+                NSTextCheckingResult *match = [exp firstMatchInString:build options:0 range:NSMakeRange(0, build.length)];
+                if (match) {
+                    self.buildField.stringValue = [build substringWithRange:match.range];
+                } else {
+                    message = @"Build号格式错误。参考格式：\"1\", \"2.1\", \"3.2.1\"";
+                }
+            } else {
+                message = @"Build号格式错误。参考格式：\"1\", \"2.1\", \"3.2.1\"";
+            }
+        }
+        
+        
     }
     if (message) {
         [self showAlertWithMsg:message];
@@ -354,8 +400,10 @@ static NSString *bundleIDKey = @"BUNDLE_ID_KEY";
         _ppField.stringValue = [df objectForKey:PPKey];
         NSNumber *enable = [df objectForKey:modifyEnableKey];
         _bundleIdCheckBtn.state = enable.integerValue;
-        
         _bundleIdField.stringValue = [df objectForKey:bundleIDKey];
+        _disPlayNameField.stringValue = [df objectForKey:displayNameKey];
+        _versionField.stringValue = [df objectForKey:versionKey];
+        _buildField.stringValue = [df objectForKey:buildKey];
         
     } else {
         [df setObject:_ipaField.stringValue forKey:IPAKey];
@@ -367,8 +415,33 @@ static NSString *bundleIDKey = @"BUNDLE_ID_KEY";
         } else {
             [df setObject:@"" forKey:bundleIDKey];
         }
+        [df setObject:_disPlayNameField.stringValue forKey:displayNameKey];
+        [df setObject:_versionField.stringValue forKey:versionKey];
+        [df setObject:_buildField.stringValue forKey:buildKey];
         [df synchronize];
     }
+}
+
+- (NSString *)versionHandler:(NSString *)version {
+    if (version.length > 0) {
+        NSArray *componments = [version componentsSeparatedByString:@"."];
+        componments = [componments filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id  _Nullable evaluatedObject, NSDictionary<NSString *,id> * _Nullable bindings) {
+            return [evaluatedObject length] > 0;
+        }]];
+        
+        if (componments.count > 0) {
+            NSMutableArray *map = [NSMutableArray arrayWithCapacity:componments.count];
+            for (NSString *st in componments) {
+                // 去除版本中多余的0
+                NSString *fix = @(st.integerValue).stringValue;
+                [map addObject:fix];
+            }
+            return [map componentsJoinedByString:@"."];
+        } else {
+            return @"";
+        }
+    }
+    return version;
 }
 
 @end

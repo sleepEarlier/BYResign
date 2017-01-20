@@ -1,5 +1,10 @@
 更新日志
 
+1.3
+增加应用名、版本号、Build号的修改功能
+修复开发包重签为上架包，Entitlements中Associate-Domain为*的错误
+(仅仅是修复错误，不建议将开发包重签名为上架包后用于上架)
+
 1.2
 重签名包在Info.plist中增加Resign_Version字段
 包中增加重签名文件

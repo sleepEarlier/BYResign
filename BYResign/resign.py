@@ -16,19 +16,25 @@ import tempfile
 import plistlib
 import logging
 
-Tool_Version = '1.2'
+appContent = os.path.dirname(os.path.dirname(__file__))
+plistPath = os.path.join(appContent, 'Info.plist')
+pl = plistlib.readPlist(plistPath)
+Tool_Version = pl['CFBundleShortVersionString']
+
+utils_path = '/usr/libexec/PlistBuddy'
 
 # Log Config
 formatter = logging.Formatter('[line:%(lineno)d]: %(message)s')
 logger = logging.getLogger('BYResign')
 logger.setLevel(logging.DEBUG)
 streamHandler = logging.StreamHandler(sys.stdout)
-
+streamHandler.setFormatter(formatter)
 logger.addHandler(streamHandler)
 
 
 def addFileHandler(filePath):
 	fileHandler = logging.FileHandler(filePath,encoding = 'utf-8')
+	fileHandler.setFormatter(formatter)
 	logger.addHandler(fileHandler)
 
 def __handle_error_lines(process, cmd, inlistformate = False):
@@ -82,14 +88,84 @@ def execute_cmd(cmd, getfeedback = True):
 		return process
 
 
+class PlistBuddy(object):
+	"""PlistBuddy:
+	-c Execute "command" and exit. By default, PlistBuddy will run in interactive mode.
+	-x Output will be in the form of an xml plist where appropriate.
+	PlistBuddy command returns a zero exit status if it succeeds. Non zero is returned in case of failure
+	条目内含有多层属性（dict），key使用冒号分隔，数组索引以0开始
+	A:{
+		'B':[
+				{
+					'C':'Content'
+				},
+				{
+					'D':'Desktop'
+				}
+			]
+	}
+	/usr/libexec/PlistBuddy -c "Print A:B:0:C" ~/Desktop/xxx.plist
+	输出 Content
+	"""
+	def __init__(self, plistPath):
+		super(PlistBuddy, self).__init__()
+		self.plistPath = plistPath
+		if not os.path.exists(plistPath):
+			raise Exception('Plist File not exists at:%s' % plistPath)
+		if not os.path.exists(utils_path):
+			raise Exception('PlistBuddy utils not exists at %s' % utils_path)
+		
+
+	def get(self, key):
+		# /usr/libexec/PlistBuddy "Print CFBundleVersion" ~/xxx.plist 打印Bundleversion值
+		# /usr/libexec/PlistBuddy "Print CFBundleURLTypes:2" ~/xxx.plist 打印URLTypes数组的第二项的值
+		# /usr/libexec/PlistBuddy "Print CFBundleURLTypes:2:CFBundleURLName" ~/xxx.plist 打印URLTypes数组的第二项key为CFBundleURLName的值
+		cmd = '%s -c \"Print %s\" %s' % (utils_path, key, self.plistPath)
+		feedback = execute_cmd(cmd, True)
+		if 'Does Not Exist' in feedback:
+			return None
+		return feedback.strip()
+
+	def set(self, key, value):
+		cmd = '%s -c \"Set :%s \'%s\'\" %s' % (utils_path, key, value, self.plistPath)
+		feedback = execute_cmd(cmd, True)
+		if len(feedback) == 0:
+			return self.get(key)
+		else:
+			logger.info(feedback)
+			return None
+
+
+	def add(self, key, type = 'string', value = None):
+		# avaliable type: string\array\dict\bool\real\integer\date\data
+		# bool: 0-1, true-false, yes-no
+		# array 和 dict 中的元素需要先add type, 再set value
+		# plist.add('arr', 'array') -> plist.add('arr:0', 'string') -> plist.set('arr:0', 'text')
+		# plist.add('dic', 'dict') -> plist.add('dic:key', 'bool') -> plist.set('dic:key', 'false')
+		# key中包含空格时，需要将整个key包含在引号中, plist.add(dic:\'test key\', 'string')
+		# plist根节点下，非array，dict类型，可以直接add(key, type, value)
+		sub_cmd = 'Add :%s %s' % (key, type)
+		if value and type == 'string':
+			sub_cmd = sub_cmd + " \'%s\'" % value
+		cmd = '%s -c \"%s\" %s' % (utils_path, sub_cmd, self.plistPath)
+		feedback = execute_cmd(cmd, True)
+		if len(feedback) == 0:
+			return self.get(key)
+		else:
+			logger.info(feedback)
+			return None
+
 class Resigner(object):
 	"""Resign a ipa"""
-	def __init__(self, ipaPath, resourcePathes, newProfilePath, newBundleId, cerSHA, cerName, workDir):
+	def __init__(self, ipaPath, resourcePathes, newProfilePath, newBundleId, newDisplayName, newVersion, newBuild, cerSHA, cerName, workDir):
 		super(Resigner, self).__init__()
 		self.ipaPath = ipaPath
 		self.resourcePathes = resourcePathes
 		self.replacePPFilePath = newProfilePath
 		self.newBundleId = newBundleId
+		self.newDisplayName = newDisplayName
+		self.newVersion = newVersion
+		self.newBuild = newBuild
 		self.cerSHA = cerSHA
 		self.cerName = cerName
 		self.workDir = workDir
@@ -98,7 +174,7 @@ class Resigner(object):
 	def resign(self):
 		# self.unzipIPA()
 		# self.replacePPFIleIfNeed()
-		# self.modifyBundleIdIfNeed()
+		# self.modifyInfoPlistIfNeed()
 		# self.generateEntitlements()
 
 		# self.checkSignCondition()
@@ -109,7 +185,7 @@ class Resigner(object):
 		try:
 			self.unzipIPA()
 			self.replacePPFIleIfNeed()
-			self.modifyBundleIdIfNeed()
+			self.modifyInfoPlistIfNeed()
 			self.generateEntitlements()
 
 			self.checkSignCondition()
@@ -119,10 +195,11 @@ class Resigner(object):
 			self.verifySignature()
 			self.packIPA()
 		except Exception as e:
-			self.cleanUp()
+			# self.cleanUp()
 			raise e
 		else:
-			self.cleanUp()
+			pass
+			# self.cleanUp()
 		
 		
 	def unzipIPA(self):
@@ -213,6 +290,8 @@ class Resigner(object):
 			except Exception, e:
 				raise Exception('读取plist文件失败：%s' % e)
 			entitlements = tempPlist['Entitlements']
+
+			# 特殊处理大连的keychain
 			if self.infoBundleId == 'com.boyaa.dalianAPPID':
 				# prefix: 7QMD9LVCM8
 				entitlements['keychain-access-groups'] = ['7QMD9LVCM8.7QMD9LVCM8.com.boyaa.dalianAPPID']
@@ -221,6 +300,10 @@ class Resigner(object):
 				entitlements['keychain-access-groups'] = ['2E38PQV246.7QMD9LVCM8.com.boyaa.dalianAPPID']
 			else:
 				entitlements['keychain-access-groups'] = [entitlements['application-identifier']]
+
+			# 处理associate-domains，打包时,entitlements中通用链接是数组格式，Profile中的*会处理为[]
+			if entitlements['com.apple.developer.associated-domains'] == '*':
+				entitlements['com.apple.developer.associated-domains'] = []
 			try:
 				plistlib.writePlist(entitlements, self.entitlements)
 			except Exception, e:
@@ -268,46 +351,58 @@ class Resigner(object):
 			raise Exception('描述文件BundleId:\"%s\" 与Info.plist的bundleId:\"%s\"不匹配' %(embeddedBundleId, self.infoBundleId))
 		logger.info('Profile matches Cer, bundleId matches')
 
-	def modifyBundleIdIfNeed(self):
+	def modifyInfoPlistIfNeed(self):
 		logger.info('\nModifying BundleId...')
-		if len(self.newBundleId) > 0:
+		plist = PlistBuddy(self.infoPlistPath)
 
-			# CFBundleIdentifier
-			logger.info('modify CFBundleIdentifier...')
-			cmd = "/usr/libexec/PlistBuddy -c \"Set CFBundleIdentifier %s\" %s" % (self.newBundleId, self.infoPlistPath)
-			feedback = execute_cmd(cmd)
-			if len(feedback) < 1:
+		# BundleId
+		if len(self.newBundleId) > 0:
+			if plist.set('CFBundleIdentifier', self.newBundleId):
 				logger.info('modify CFBundleIdentifier success')
-				# softwareVersionBundleId
-				cmd = "/usr/libexec/PlistBuddy -c \"Print softwareVersionBundleId\" %s" % self.infoPlistPath
-				feedback = execute_cmd(cmd)
-				if 'Does Not Exist' in feedback:
-					logger.info('No need to modify softwareVersionBundleId')
+			else:
+				raise Exception('modify CFBundleIdentifier failed')
+
+			# 
+			if plist.get('softwareVersionBundleId'):
+				if plist.set('softwareVersionBundleId', self.newBundleId):
+					logger.info('modify softwareVersionBundleId success')
 				else:
-					cmd = "/usr/libexec/PlistBuddy -c \"Set softwareVersionBundleId %s\" %s" % (self.newBundleId, self.infoPlistPath)
-					feedback = execute_cmd(cmd)
-					if len(feedback) < 1:
-						logger.info('modify CFBundleIdentifier success')
-					else:
-						logger.info(feedback)
-						raise Exception('修改iTunes资料BundleId失败:%s' % feedback)
-				self.infoBundleId = self.newBundleId
+					raise Exception('modify softwareVersionBundleId failed')
+			else:
+				logger.info('No need to modify softwareVersionBundleId')
+			self.infoBundleId = self.newBundleId
+			
 		else:
 			logger.info('No need to modify BundleIds')
-			cmd = "/usr/libexec/PlistBuddy -c \"Print CFBundleIdentifier\" %s" % self.infoPlistPath
-			feedback = execute_cmd(cmd)
-			feedback = feedback.strip()
-			self.infoBundleId = feedback
-
-		# add resign version
-		cmd = "/usr/libexec/PlistBuddy -c \"Add :Resign_Version string %s\" %s" % (Tool_Version, self.infoPlistPath)
-		feedback = execute_cmd(cmd)
-		if len(feedback) < 1:
-			logger.info('add Resign_Version:%s' % Tool_Version)
-		else:
-			logger.info('add Resign_Version feedback:%s' % feedback)
+			self.infoBundleId = plist.get('CFBundleIdentifier')
 
 		logger.info('Info BundleId:\"%s\"' % self.infoBundleId)
+
+		# DisplayName
+		if len(self.newDisplayName) > 0:
+			plist.set('CFBundleDisplayName', self.newDisplayName)
+			logger.info('Set new DisplayName:%s' % self.newDisplayName)
+
+		# Version
+		if len(self.newVersion):
+			plist.set('CFBundleShortVersionString', self.newVersion)
+			logger.info('Set new Version:%s' % self.newVersion)
+
+		# build
+		if len(self.newBuild):
+			plist.set('CFBundleVersion', self.newBuild)
+			logger.info('Set new Build:%s' % self.newBuild)
+
+
+		# add resign version
+		if plist.get('Resign_Version'):
+			plist.set('Resign_Version', Tool_Version)
+			logger.info('add Resign_Version:%s' % Tool_Version)
+		elif plist.add('Resign_Version', 'string', Tool_Version):
+			logger.info('add Resign_Version:%s' % Tool_Version)
+		else:
+			raise Exception('add Resign_Version failed')
+
 
 	def replaceFile(self, directory, targetFilePathes):
 		for file in os.listdir(directory):
@@ -420,13 +515,16 @@ if __name__ == '__main__':
 		resourcePathes = args[2]
 		embedPath = args[3]
 		newBundleId = args[4]
-		cerSHA = args[5]
-		cerName = args[6]
-		workDir = args[7]
+		newName = args[5]
+		newVersion = args[6]
+		newBuild = args[7]
+		cerSHA = args[8]
+		cerName = args[9]
+		workDir = args[10]
 	except:
 		raise Exception('缺少必要参数，请检查,argv = %s' % args)
 	else:
-		rsg = Resigner(ipaPath, resourcePathes, embedPath, newBundleId, cerSHA, cerName, workDir)
+		rsg = Resigner(ipaPath, resourcePathes, embedPath, newBundleId, newName, newVersion, newBuild, cerSHA, cerName, workDir)
 		rsg.resign()
         
 
